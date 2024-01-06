@@ -34,14 +34,14 @@ WorkflowMain.initialise(workflow, params, log)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { CHROMOSEQ } from './workflows/chromoseq'
+include { NFCHROMOSEQ } from './workflows/nfchromoseq'
 
 //
 // WORKFLOW: Run the chromoseq pipeline
 //
 
-workflow CHROMOSEQ_WF {
-    CHROMOSEQ ()
+workflow NFCHROMOSEQ_WF {
+    NFCHROMOSEQ ()
 }
 
 /*
@@ -52,10 +52,9 @@ workflow CHROMOSEQ_WF {
 
 //
 // WORKFLOW: Execute a single named workflow for the pipeline
-// See: https://github.com/nf-core/rnaseq/issues/619
 //
 workflow {
-    CHROMOSEQ_WF ()
+    NFCHROMOSEQ_WF ()
 }
 
 /*

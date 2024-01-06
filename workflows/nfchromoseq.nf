@@ -36,6 +36,12 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
 include { INPUT_CHECK } from '../subworkflows/local/input_check'
+include { INPUT_CHECK            } from '../subworkflows/local/input_check.nf'
+include { CHROMOSEQ_ANALYSIS     } from '../subworkflows/local/chromoseq_analysis.nf'
+include { GATHER_FASTQS          } from '../subworkflows/local/gather_fastqs.nf'
+include { DEMUX                  } from '../subworkflows/local/demux.nf'
+include { DRAGEN_ALIGN           } from '../subworkflows/local/dragen_align.nf'
+include { COMBINE_RUNINFO        } from '../modules/local/combine_runinfo.nf'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -46,9 +52,38 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check'
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC                      } from '../modules/nf-core/fastqc/main'
+
 include { MULTIQC                     } from '../modules/nf-core/multiqc/main'
 include { CUSTOM_DUMPSOFTWAREVERSIONS } from '../modules/nf-core/custom/dumpsoftwareversions/main'
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    CUSTOM HELPER FUNCTIONS FOR MAIN WORKFLOW
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+// This function 'stages' a set of files defined by a map of key:filepath pairs.
+// It returns a tuple: a map of key:filename pairs and list of file paths.
+// This can be used to generate a value Channel that can be used as input to a process
+// that accepts a tuple val(map), path("*") so map.key refers to the appropriate linked file.
+def stageFileset(Map filePathMap) {
+    def basePathMap = [:]
+    def filePathsList = []
+
+    filePathMap.each { key, value ->
+        def filepath = file(value)
+        if (filepath.exists()) {
+            // Add basename and key to the map
+            basePathMap[key] = value.split('/')[-1]
+            // Add file path to the list
+            filePathsList << filepath
+        } else {
+            println "Warning: File at '${value}' for key '${key}' does not exist."
+        }
+    }
+    return [basePathMap, filePathsList]
+}
+
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -63,28 +98,152 @@ workflow NFCHROMOSEQ {
 
     ch_versions = Channel.empty()
 
-    //
-    // SUBWORKFLOW: Read in samplesheet, validate and stage input files
-    //
-    INPUT_CHECK (
-        file(params.input)
-    )
+    // Mastersheet channel
+    ch_mastersheet = Channel.fromPath(params.input)
+
+    // stage chromoseq-specific inputs
+    ch_chromoseq_inputs = Channel.value(stageFileset(params.chromoseq_inputs))
+
+    // add cna windows and hotspot vcf to params.dragen_inputs and stage dragen input files
+    params.dragen_inputs.hotspots = params.chromoseq_inputs.hotspots
+    params.dragen_inputs.hotspots_index = params.chromoseq_inputs.hotspots_index
+    params.dragen_inputs.cna_windows = params.chromoseq_inputs.cna_windows
+    ch_dragen_inputs = Channel.value(stageFileset(params.dragen_inputs))
+
+    // holds fastq list files for processing and alignment
+    ch_fastqs = Channel.empty()
+
+    // holds fastq list files for processing and alignment
+    ch_cramstorealign = Channel.empty()
+
+    // holds fastq lists and ids for alignment
+    ch_align_inputs = Channel.empty()
+
+    // holds dragen output paths
+    ch_dragen_output = Channel.empty()
+
+    // holds processed dragen output paths and metadata for analysis
+    ch_analysis_inputs = Channel.empty()    
+
+    // check the samplesheet. This just gets the meta values.
+    INPUT_CHECK(ch_mastersheet)
+    ch_sample_meta = INPUT_CHECK.out.meta
     ch_versions = ch_versions.mix(INPUT_CHECK.out.versions)
-    // TODO: OPTIONAL, you can use nf-validation plugin to create an input channel from the samplesheet with Channel.fromSamplesheet("input")
-    // See the documentation https://nextflow-io.github.io/nf-validation/samplesheets/fromSamplesheet/
-    // ! There is currently no tooling to help you write a sample sheet schema
 
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        INPUT_CHECK.out.reads
-    )
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+    // only run demux if a rundir is passed
+    if (params.rundir && params.run_demux == true){
+        // do demux
+        DEMUX(ch_mastersheet, Channel.fromPath(params.rundir), Channel.fromPath(params.demuxdir))
+        ch_fastqs = ch_fastqs.mix(DEMUX.out.fastqlist)
+        ch_versions = ch_versions.mix(DEMUX.out.versions)
+    }    
 
-    CUSTOM_DUMPSOFTWAREVERSIONS (
-        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-    )
+    // get fastq lists from mastersheet, including from fastq_list.csv, demux_directories, and crams.
+    // FASTQs are generated from all of these sources and compiled into a single list for dragen align.
+    // Runinfo data are also compiled.
+    GATHER_FASTQS(ch_sample_meta)
+    ch_fastqs = ch_fastqs.mix(GATHER_FASTQS.out.fastqlist)
+    ch_versions = ch_versions.mix(GATHER_FASTQS.out.versions)
+
+    // now combine all fastqs into a single object with the runinfo
+    ch_fastqs
+    .groupTuple()
+    .map { id, fqlist, runinfo -> 
+            def fileList = ['RGID,RGSM,RGLB,Lane,Read1File,Read2File']
+            def read1 = []
+            def read2 = []
+
+            // Create data rows
+            for (int i = 0; i < fqlist.size(); i++) {
+                def row = fqlist[i]
+                read1 << file(row[3])
+                read2 << file(row[4])
+                fileList << [ row[0], id, row[1], row[2], row[3].toString().split('/')[-1], row[4].toString().split('/')[-1] ].join(',')
+            }
+            return [ id, fileList.join('\n'), read1, read2, runinfo ]
+    }
+    .set { ch_fastqs }
+
+    // the run info needs to be consolidate, so first we have to separate it out then recombine it
+    ch_fastqs
+    .map { id, list, read1, read2, runinfo -> [ id, runinfo ] }
+    .set { ch_runinfo }
+
+    COMBINE_RUNINFO(ch_runinfo)
+    ch_versions = ch_versions.mix(COMBINE_RUNINFO.out.versions)
+
+    ch_fastqs
+    .map { id, list, read1, read2, runinfo -> [ id, list, read1, read2 ] }
+    .join(COMBINE_RUNINFO.out.runinfo)
+    .set { ch_fastqs }
+
+    // now add the full metadata
+    ch_sample_meta
+    .map { meta -> 
+        new_meta = meta.subMap('id', 'mrn', 'accession', 'specimen', 'dob', 'sex','exceptions')
+        [meta.id, new_meta]
+    }
+    .unique()
+    .join(ch_fastqs)
+    .map {id, meta, list, read1, read2, runinfo -> [meta, list, read1, read2, runinfo]}
+    .set { ch_align_input }
+
+    // finally, get crams that need to be realigned, if realignment was specified
+    ch_sample_meta
+    .map { meta -> 
+        if (params.realign && !meta.i5index && !meta.i7index && !meta.fastq_list && !meta.read1 && !meta.read2) {
+            new_meta = meta.subMap('id', 'mrn', 'accession', 'specimen', 'dob', 'sex','exceptions')
+            if (meta.dragen_path) {
+                if (file(meta.dragen_path).isDirectory()) {
+                    def cram = file("${meta.dragen_path}/${meta.id}_tumor.cram", checkExists: true)
+                    [ new_meta, cram ]
+                } else if (file(meta.dragen_path).isFile()) {
+                    [ new_meta, file(meta.dragen_path) ]
+                }
+            }
+        }
+    }
+    .set { ch_cramtorealign }
+
+    if (params.debug){
+        ch_align_input.view()
+    }
+
+    if (params.run_align == true) {
+        DRAGEN_ALIGN(ch_align_input, ch_cramtorealign, ch_dragen_inputs, params.chromoseq_parameters)
+        ch_dragen_output = DRAGEN_ALIGN.out.dragen_output
+        ch_versions.mix(DRAGEN_ALIGN.out.versions)
+    }
+
+    // add any dragen paths to analysis list, if realign was not specified
+    if (!params.realign){
+        ch_sample_meta
+        .map { meta -> 
+            if (!meta.read1 && !meta.read2 && !meta.fastq_list && meta.dragen_path != null){
+                def files = file("${meta.dragen_path}/${meta.id}*")
+                return([ meta, files ])
+            }
+        }
+        .concat(ch_dragen_output)
+        .set { ch_dragen_output }
+    }
+
+    if (params.debug){
+        ch_dragen_output.view()
+    }
+
+
+    // run analysis
+    if (params.run_analysis == true) {
+        CHROMOSEQ_ANALYSIS(ch_dragen_output, ch_chromoseq_inputs, params.chromoseq_parameters)
+        ch_versions.mix(CHROMOSEQ_ANALYSIS.out.versions)
+    }
+
+//    ch_qc_reports = CHROMOSEQ_ANALYSIS.out.mqc_report
+
+//    CUSTOM_DUMPSOFTWAREVERSIONS (
+//        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+//    )
 
     //
     // MODULE: MultiQC
@@ -99,7 +258,7 @@ workflow NFCHROMOSEQ {
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
+//    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect(),

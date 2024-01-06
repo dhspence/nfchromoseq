@@ -2,8 +2,14 @@
 // This file holds several functions specific to the workflow/nfchromoseq.nf in the dhslab/nfchromoseq pipeline
 //
 
+@Grab(group='org.apache.commons', module='commons-csv', version='1.8')
 import nextflow.Nextflow
 import groovy.text.SimpleTemplateEngine
+import org.apache.commons.csv.CSVFormat
+import org.apache.commons.csv.CSVParser
+import org.apache.commons.csv.CSVRecord
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class WorkflowNfchromoseq {
 
@@ -11,15 +17,132 @@ class WorkflowNfchromoseq {
     // Check and validate parameters
     //
     public static void initialise(params, log) {
-
         genomeExistsError(params, log)
-
-
         if (!params.fasta) {
-            Nextflow.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
+            log.error "Genome fasta file not specified with e.g. '--fasta genome.fa' or via a detectable config file."
+            System.exit(1)
         }
+
+        // Check that the mastersheet exists
+        if (!params.outdir || !Files.exists(Paths.get(params.outdir))) {
+            log.error "Output directory not specified."
+            System.exit(1)
+        }
+
+        // Check that the mastersheet exists
+        if (!params.input || !Files.exists(Paths.get(params.input))) {
+            log.error "Mastersheet: (${params.input}) not specified with e.g. '--input mastersheet.csv' or via a detectable config file."
+            System.exit(1)
+        }
+
+        // run validateMastersheet
+        if (validateMastersheet(params,log) == false) {
+            log.error "Mastersheet validation failed."
+            System.exit(1)
+        }
+
+        // validate all files in params.dragen_inputs
+        params.dragen_inputs.each { key, value ->
+            if (value == null || !Files.exists(Paths.get(value))) {
+                log.error "Invalid path in 'dragen_inputs' field: ${value}"
+                System.exit(1)
+            }
+        }
+
+        // validate all files in params.chromoseq_inputs
+        params.chromoseq_inputs.each { key, value ->
+            if (value == null || !Files.exists(Paths.get(value))) {
+                log.error "Invalid path in 'chromoseq_inputs' field: ${value}"
+                System.exit(1)
+            }
+        }
+
     }
 
+    //
+    // Validate mastersheet
+    //
+    public static boolean validateMastersheet(params,log) {
+        def csvFile = new File(params.input)
+        // Check if the file exists
+        if (!csvFile.exists()) {
+            log.error "Workflow validation error: Mastersheet not found: ${csvFile.path}"
+            System.exit(1)
+        }
+
+        // Read the file and check headers
+        csvFile.withReader { reader ->
+            CSVParser parser = CSVFormat.DEFAULT.withFirstRecordAsHeader().parse(reader)
+            def headers = parser.headerMap.keySet()
+
+            if (!headers.contains('id')) {
+                log.error "Workflow validation error: No 'id' field found in mastersheet."
+                System.exit(1)
+            }
+
+            for (CSVRecord record : parser) {
+
+                def id = record.get('id')
+                if (id.trim().isEmpty()) {
+                    log.error "Workflow validation error: Invalid 'id' field: cannot be null or empty."
+                    System.exit(1)
+                }
+                // Validate 'id' field
+                if (id.contains(" ")) {
+                    log.error "Mastersheet error: id field should not contain spaces."
+                    System.exit(1)
+                }
+                
+                // Validate 'lanes' field
+                if (headers.contains('lanes') || headers.contains('index')){
+                    
+                    if ((record.get('lanes').trim() && !record.get('index').trim()) || (!record.get('lanes').trim() && record.get('index').trim())){
+                        log.error "Workflow validation error: index and lanes must both be specified."
+                        System.exit(1)
+                    }
+
+                    if (record.get('lanes').trim() && record.get('index').trim() && params.rundir == null){
+                        log.error "Workflow validation error: rundir must be given if lanes and index are specified."
+                        System.exit(1)
+                    }
+
+                    if (!record.get('lanes').matches("\\d+(,\\d+)*")) {
+                        log.error "Workflow validation error: Invalid format in 'lanes' mastersheet field (e.g., 1,2,3)."
+                        System.exit(1)
+                    }
+
+                    // Validate 'index' field
+                    if (headers.contains('index')){
+                        def index = record.get('index')
+                        if (index.find("[^ACGT\\-]") || index.find(" ")) {
+                            log.error "Workflow validation error: Invalid format in 'index': ${index}."
+                            System.exit(1)
+                        }
+                    }
+                }
+
+                headers.eachWithIndex { header, index ->
+                    if (header in ['fastq_list','demux_path', 'dragen_path', 'read1', 'read2']){
+                        def filepath = record.get(header).trim()
+                        if (!Files.exists(Paths.get(filepath))) {
+                            log.error "Workflow validation error: Invalid path in '$header' field: ${filepath}"
+                            System.exit(1)
+                        }
+                    }
+                }
+
+                // Check at least one of demux_path, dragen_dir, or index are valid
+                if (!['demux_path', 'dragen_path', 'fastq_list', 'index','read1','read2'].any { headers.contains(it) && record.get(it).trim() }) {
+                    log.error "Workflow validation error: At least one of 'demux_path', 'dragen_path', 'index', or 'read1' and 'read2' must be valid."
+                    System.exit(1)
+                }
+
+            }
+        }
+        return params
+    }
+
+    
     //
     // Get workflow summary for MultiQC
     //
