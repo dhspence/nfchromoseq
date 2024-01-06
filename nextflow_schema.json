@@ -5,15 +5,6 @@
     "description": "Nextflow ChromoSeq tumor-only WGS pipeline",
     "type": "object",
     "definitions": {
-        "wash_u_ris_compute1_options": {
-            "title": "Wash U RIS compute1 options",
-            "type": "object",
-            "description": "Required parameters for executing",
-            "default": "",
-            "properties": {
-            },
-            "fa_icon": "fas fa-laptop-code"
-        },
         "dragen_align_inputs": {
             "title": "Dragen align inputs",
             "type": "object",

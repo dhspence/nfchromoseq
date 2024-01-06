@@ -30,7 +30,7 @@ class WorkflowNfchromoseq {
         }
 
         // Check that the mastersheet exists
-        if (!params.input || !Files.exists(Paths.get(params.input))) {
+        if (!params.input || params.input==true || !Files.exists(Paths.get(params.input))) {
             log.error "Mastersheet: (${params.input}) not specified with e.g. '--input mastersheet.csv' or via a detectable config file."
             System.exit(1)
         }
@@ -44,7 +44,7 @@ class WorkflowNfchromoseq {
         // validate all files in params.dragen_inputs
         params.dragen_inputs.each { key, value ->
             if (value == null || !Files.exists(Paths.get(value))) {
-                log.error "Invalid path in 'dragen_inputs' field: ${value}"
+                log.error "Invalid path in 'dragen_inputs' field: ${key}"
                 System.exit(1)
             }
         }
@@ -52,7 +52,7 @@ class WorkflowNfchromoseq {
         // validate all files in params.chromoseq_inputs
         params.chromoseq_inputs.each { key, value ->
             if (value == null || !Files.exists(Paths.get(value))) {
-                log.error "Invalid path in 'chromoseq_inputs' field: ${value}"
+                log.error "Invalid path in 'chromoseq_inputs' field: ${key}"
                 System.exit(1)
             }
         }
@@ -106,7 +106,7 @@ class WorkflowNfchromoseq {
                         System.exit(1)
                     }
 
-                    if (!record.get('lanes').matches("^\\d+(,\\d+)*$")) {
+                    if (!record.get('lanes').matches("\\d+(,\\d+)*")) {
                         log.error "Workflow validation error: Invalid format in 'lanes' mastersheet field (e.g., 1,2,3)."
                         System.exit(1)
                     }
