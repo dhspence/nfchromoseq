@@ -16,7 +16,7 @@ process ANNOTATE_VARIANTS {
     script:
     """
     /usr/bin/perl -I /opt/lib/perl/VEP/Plugins /opt/vep/src/ensembl-vep/vep \\
-    --format vcf --vcf --fasta ${params.genome} --hgvs --symbol --term SO --flag_pick -o ${meta.id}.annotated.vcf \\
+    --format vcf --vcf --fasta ${params.fasta} --hgvs --symbol --term SO --flag_pick -o ${meta.id}.annotated.vcf \\
     -i ${meta.id}.smallvariants.vcf.gz --custom ${chromoseq_inputs.cytobands},cytobands,bed --custom ${chromoseq_inputs.custom_annotation_vcf},${chromoseq_parameters.custom_annotation_parameters} --offline --cache --max_af --dir ${chromoseq_inputs.vepcache} && \\
     bgzip -c ${meta.id}.annotated.vcf > ${meta.id}.annotated.vcf.gz && \\
     tabix -p vcf ${meta.id}.annotated.vcf.gz

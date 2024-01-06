@@ -106,7 +106,7 @@ class WorkflowNfchromoseq {
                         System.exit(1)
                     }
 
-                    if (!record.get('lanes').matches("\\d+(,\\d+)*")) {
+                    if (!record.get('lanes').matches("^\\d+(,\\d+)*$")) {
                         log.error "Workflow validation error: Invalid format in 'lanes' mastersheet field (e.g., 1,2,3)."
                         System.exit(1)
                     }

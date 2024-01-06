@@ -13,7 +13,7 @@ process RUN_HAPLOTECT {
 
     script:
     """
-    haplotect -e ${meta.id}"_tumor.cram" ${chromoseq_inputs.haplotect} ${params.genome} > ${meta.id}".haplotect.txt"
+    haplotect -e ${meta.id}"_tumor.cram" ${chromoseq_inputs.haplotect} ${params.fasta} > ${meta.id}".haplotect.txt"
     """
 
     stub:

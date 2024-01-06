@@ -1,0 +1,67 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://raw.githubusercontent.com/nf-core/chromoseq/master/assets/mastersheet_schema.json",
+    "title": "dhslab/nfchromoseq pipeline - Mastersheet schema",
+    "description": "Schema for the Mastersheet file for params.input",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "Sample id must be provided and cannot contain spaces"
+            },
+            "lanes": {
+                "type": "string",
+                "pattern": "^\\d+(,\\d+)*$",
+                "errorMessage": "Illumina flowcell lanes, comma-separated and quoted if multiple."
+            },
+            "index": {
+                "type": "string",
+                "pattern": "^[ACGT]{8,10}-[ACGT]{8,10}$]",
+                "errorMessage": "Index sequences in i7-i5 format."
+            },
+            "fastq_list": {
+                "type": "string",
+                "format": "file-path",
+                "exists": true,
+                "pattern": "^\\S+$",
+                "errorMessage": "Path to valid Illumina-formatted fastq_list.csv file."
+            },
+            "demux_path": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "format": "file-path",
+                "exists": true,
+                "errorMessage": "Path to valid Illumina demux directory."
+            },
+            "dragen_path": {
+                "errorMessage": "Path to dragen output directory or dragen *_tumor.cram.",
+                "exists": true,
+                "anyOf": [
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+_tumor.cram$"
+                        "format": "file-path",
+                    },
+                    {
+                        "type": "string",
+                        "pattern": "^\\S+$"
+                    }
+                ]
+            },
+            "read1": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "Read1 FastQ file, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            },
+            "read2": {
+                "type": "string",
+                "pattern": "^\\S+\\.f(ast)?q\\.gz$",
+                "errorMessage": "Read1 FastQ file, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+            }
+        },
+        "required": ["id"]
+    }
+}

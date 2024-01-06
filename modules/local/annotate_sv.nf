@@ -15,7 +15,7 @@ process ANNOTATE_SV {
     script:
     """
     /usr/bin/perl -I /opt/lib/perl/VEP/Plugins /opt/vep/src/ensembl-vep/vep --format vcf --vcf \\
-    --fasta ${params.genome} --flag_pick --symbol --distance ${chromoseq_parameters.sv_annotation_distance} \\
+    --fasta ${params.fasta} --flag_pick --symbol --distance ${chromoseq_parameters.sv_annotation_distance} \\
     --term SO -o ${meta.id}.sv_vep.vcf -i ${meta.id}.sv.vcf.gz \\
     --custom ${chromoseq_inputs.cytobands},cytobands,bed --custom ${chromoseq_inputs.sv_bed},KnownSvGenes,bed \\
     --offline --cache --dir ${chromoseq_inputs.vepcache} && \\

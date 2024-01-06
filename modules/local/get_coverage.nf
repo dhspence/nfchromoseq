@@ -16,7 +16,7 @@ process GET_COVERAGE {
     script:
     """
     cat ${chromoseq_inputs.gene_bed} ${chromoseq_inputs.sv_bed} | gunzip -c | sort -k 1,1V -k 2,2n > regions.bed && \\
-    get_dragen_coverage.py -r ${params.genome} -c "${chromoseq_parameters.coverage_qc_levels}" -o ${meta.id}.coverage_report.tsv regions.bed ${meta.id}_tumor.cram
+    get_dragen_coverage.py -r ${params.fasta} -c "${chromoseq_parameters.coverage_qc_levels}" -o ${meta.id}.coverage_report.tsv regions.bed ${meta.id}_tumor.cram
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

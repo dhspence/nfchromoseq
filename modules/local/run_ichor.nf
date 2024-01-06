@@ -11,7 +11,7 @@ process RUN_ICHOR {
     
     output:
     tuple val(meta), path ("*.segs.txt")                  , emit: seg
-    tuple val(meta), path ("*_genomeWide_all_sols.pdf")         , emit: allgenomewide_pdf
+    tuple val(meta), path ("*_genomeWide_all_sols.pdf")   , emit: allgenomewide_pdf
     tuple val(meta), path ("*_genomeWide.pdf")            , emit: genomewide_pdf
     tuple val(meta), path ("*_genomeWideCorrection.pdf")  , emit: genomewideCorrection_pdf
  
