@@ -1,44 +1,69 @@
-//
-// Check input samplesheet and get read channels
-//
-
-include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check'
-
 workflow INPUT_CHECK {
     take:
-    samplesheet // file: /path/to/samplesheet.csv
+        samplesheet // file: /path/to/samplesheet.csv
 
     main:
-    SAMPLESHEET_CHECK ( samplesheet )
-        .csv
-        .splitCsv ( header:true, sep:',' )
-        .map { create_fastq_channel(it) }
-        .set { reads }
+        SAMPLESHEET_CHECK ( samplesheet )
+            .csv
+            .splitCsv ( header:true, sep:',', quote:'"' )
+            .map { create_samplesheet(it) }
+            .set { meta }
 
     emit:
-    reads                                     // channel: [ val(meta), [ reads ] ]
-    versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
+        meta                                     // channel: [ val(meta), [ reads ] ]
+        versions = SAMPLESHEET_CHECK.out.versions // channel: [ versions.yml ]
 }
 
-// Function to get list of [ meta, [ fastq_1, fastq_2 ] ]
-def create_fastq_channel(LinkedHashMap row) {
+process SAMPLESHEET_CHECK {
+    tag "$samplesheet"
+    label 'process_tiny'
+
+    input:
+    path samplesheet
+
+    output:
+    path('samplesheet.valid.csv'), emit: csv
+    path('versions.yml'),          emit: versions
+
+    when:
+    task.ext.when == null || task.ext.when
+
+    script:
+    """
+    check_samplesheet.py ${samplesheet} samplesheet.valid.csv
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        python: \$(python --version | sed 's/Python //g')
+    END_VERSIONS
+    """
+    
+}
+
+def create_samplesheet(LinkedHashMap row) {
     // create meta map
     def meta = [:]
-    meta.id         = row.sample
-    meta.single_end = row.single_end.toBoolean()
+    meta.id             = row.id ?: null
+    meta.lanes          = row.lanes ? row.lanes.split(',').collect{ it as int } : null
 
-    // add path(s) of the fastq file(s) to the meta map
-    def fastq_meta = []
-    if (!file(row.fastq_1).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> Read 1 FastQ file does not exist!\n${row.fastq_1}"
+    def i7 = null
+    def i5 = null
+    if (row.index && row.index.contains('-')) {
+        (i7, i5) = row.index.split('-', 2) // Splitting with limit to handle unexpected formats
     }
-    if (meta.single_end) {
-        fastq_meta = [ meta, [ file(row.fastq_1) ] ]
-    } else {
-        if (!file(row.fastq_2).exists()) {
-            exit 1, "ERROR: Please check input samplesheet -> Read 2 FastQ file does not exist!\n${row.fastq_2}"
-        }
-        fastq_meta = [ meta, [ file(row.fastq_1), file(row.fastq_2) ] ]
-    }
-    return fastq_meta
+    meta.i7index        = i7
+    meta.i5index        = i5
+    meta.exceptions     = row.exceptions ?: null
+    meta.mrn            = row.mrn ?: null
+    meta.accession      = row.accession ?: null  
+    meta.specimen       = row.specimen ?: null
+    meta.dob            = row.dob ?: null
+    meta.sex            = row.sex ?: null
+    meta.fastq_list     = row.fastq_list ?: null
+    meta.demux_path     = row.demux_path ?: null
+    meta.dragen_path    = row.dragen_path ?: null
+    meta.read1          = row.read1 ?: null
+    meta.read2          = row.read2 ?: null
+
+    return meta
 }

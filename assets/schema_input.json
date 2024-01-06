@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema",
-    "$id": "https://raw.githubusercontent.com/dhslab/nfchromoseq/master/assets/schema_input.json",
-    "title": "dhslab/nfchromoseq pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/nf-core/chromoseq/master/assets/schema_input.json",
+    "title": "nf-core/chromoseq pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {

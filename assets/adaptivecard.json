@@ -17,7 +17,7 @@
                         "size": "Large",
                         "weight": "Bolder",
                         "color": "<% if (success) { %>Good<% } else { %>Attention<%} %>",
-                        "text": "dhslab/nfchromoseq v${version} - ${runName}",
+                        "text": "nf-core/chromoseq v${version} - ${runName}",
                         "wrap": true
                     },
                     {
