@@ -50,7 +50,7 @@ process DRAGEN_ALIGN_CRAM {
         --enable-cnv true --cnv-somatic-enable-het-calling true --cnv-enable-ref-calls false --cnv-merge-distance ${chromoseq_parameters.dragen_cnv_merge_distance} --cnv-filter-length ${chromoseq_parameters.dragen_cnv_filter_length} --cnv-population-b-allele-vcf ${dragen_inputs.pop_af_vcf} \\
         --enable-sv true --sv-output-contigs true --sv-hyper-sensitivity true --sv-min-edge-observations 2 --sv-min-candidate-spanning-count 1 \\
         --sv-use-overlap-pair-evidence true --sv-enable-somatic-ins-tandup-hotspot-regions true --sv-systematic-noise ${dragen_inputs.sv_noisefile} \\
-        --output-format CRAM --output-directory ./ --force --output-file-prefix ${meta.id} --intermediate-results-dir ${params.dragen_staging_path} &> ./${meta.id}_dragen.log
+        --output-format CRAM --output-directory ./ --force --output-file-prefix ${meta.id} --intermediate-results-dir ${dragen_inputs.dragen_staging_path} &> ./${meta.id}_dragen.log
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
@@ -95,7 +95,7 @@ process DRAGEN_ALIGN_FASTQLIST {
         --enable-cnv true --cnv-somatic-enable-het-calling true --cnv-enable-ref-calls false --cnv-merge-distance ${chromoseq_parameters.dragen_cnv_merge_distance} --cnv-filter-length ${chromoseq_parameters.dragen_cnv_filter_length} --cnv-population-b-allele-vcf ${dragen_inputs.pop_af_vcf} \\
         --enable-sv true --sv-output-contigs true --sv-hyper-sensitivity true --sv-min-edge-observations 2 --sv-min-candidate-spanning-count 1 \\
         --sv-use-overlap-pair-evidence true --sv-enable-somatic-ins-tandup-hotspot-regions true --sv-systematic-noise ${dragen_inputs.sv_noisefile} \\
-        --output-format CRAM --output-directory ./ --force --output-file-prefix ${meta.id} --intermediate-results-dir ${params.dragen_staging_path} &> ./${meta.id}_dragen.log
+        --output-format CRAM --output-directory ./ --force --output-file-prefix ${meta.id} --intermediate-results-dir ${dragen_inputs.dragen_staging_path} &> ./${meta.id}_dragen.log
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":

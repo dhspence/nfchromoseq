@@ -11,7 +11,7 @@
             "description": "Required input files for ChromoSeq dragen alignments.",
             "default": "",
             "properties": {
-                "dragen_staging_path": {
+                "dragen_inputs.dragen_staging_path": {
                     "type": "string",
                     "default": "/staging/intermediate-results-dir",
                     "description": "Staging path for dragen intermediate files"
@@ -227,15 +227,9 @@
                     "type": "boolean",
                     "description": "Option to demux first tile only."
                 },
-                "mastersheet_fields": {
-                    "type": "string",
-                    "default": "['lanes', 'id', 'index', 'exceptions', 'mrn', 'accession', 'dob', 'sex', 'fastq_list', 'demux_path', 'dragen_path']",
-                    "description": "Mastersheet fields.",
-                    "hidden": true
-                },
                 "schema_ignore_params": {
                     "type": "string",
-                    "default": "publish_dragen_outputs,bcl_first_tile,run_analysis,mastersheet_fields,job_group_name,queue,user_group,dragen_container,rundir,demuxdir,genomes,chromoseq_parameters,chromoseq_inputs,dragen_inputs,dragen_staging_path,input_cram_reference,realign",
+                    "default": "publish_dragen_outputs,bcl_first_tile,run_analysis,job_group_name,queue,user_group,dragen_container,rundir,demuxdir,genomes,chromoseq_parameters,chromoseq_inputs,dragen_inputs,input_cram_reference,realign",
                     "description": "Ignore these parameters in the schema.",
                     "hidden": true
                 },
