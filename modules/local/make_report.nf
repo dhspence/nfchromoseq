@@ -23,11 +23,11 @@ process MAKE_REPORT {
     script:
     """
     make_cs_report.py -p ${chromoseq_parameters.max_pop_af} --sex ${meta.sex} --DOB ${meta.dob} --exception "${meta.exceptions}" \\
-    --genebed ${chromoseq_inputs.gene_bed} --svbed ${chromoseq_inputs.sv_bed} --svtargets ${chromoseq_inputs.sv_targets} --qc ${chromoseq_inputs.assay_specifications} -V ${params.assay_version} -n ${meta.id} -d ./
+    --genebed ${chromoseq_inputs.gene_bed} --svbed ${chromoseq_inputs.sv_bed} --svtargets ${chromoseq_inputs.sv_targets} --qc ${chromoseq_inputs.assay_specifications} -n ${meta.id} -d ./
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        make_cs_report.py: \$(make_cs_report.py --version)
+        \$(make_cs_report.py --version)
     END_VERSIONS
     """
 
@@ -38,7 +38,7 @@ process MAKE_REPORT {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        make_cs_report.py: \$(make_cs_report.py --version)
+        \$(make_cs_report.py --version)
     END_VERSIONS
     """
 }

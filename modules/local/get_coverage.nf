@@ -20,7 +20,7 @@ process GET_COVERAGE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        get_dragen_coverage.py: \$(get_dragen_coverage.py --version)
+        \$(get_dragen_coverage.py --version)
     END_VERSIONS
     """
 
@@ -30,7 +30,7 @@ process GET_COVERAGE {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        get_dragen_coverage.py: \$(get_dragen_coverage.py --version)
+        \$(get_dragen_coverage.py --version)
     END_VERSIONS
     """
 }

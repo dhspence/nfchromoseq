@@ -17,7 +17,7 @@ process MAKE_DEMUX_SAMPLESHEET {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_dragen_demux.py: \$(prepare_dragen_demux.py --version)
+        \$(prepare_dragen_demux.py --version)
     END_VERSIONS
     """
 
@@ -28,7 +28,7 @@ process MAKE_DEMUX_SAMPLESHEET {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_dragen_demux.py: \$(prepare_dragen_demux.py --version)
+        \$(prepare_dragen_demux.py --version)
     END_VERSIONS
     """
 }

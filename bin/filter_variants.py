@@ -31,7 +31,7 @@ def main():
     parser.add_argument("-m", "--minreads", type=int, default=3, help="Minimum alt-supporting reads to pass LowReads filter")
     parser.add_argument("-a", "--minvaf", type=float, default=5.0, help="Minimum VAF to pass MinVAF filter")
     parser.add_argument("-o", "--outfile", type=fileexists, help="Outfile")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
 

@@ -156,7 +156,7 @@ parser.add_argument('-e','--exception',default='NONE',help='Exception')
 parser.add_argument('-r','--runinfostr',default='NONE',help='Illumina Run Information String')
 parser.add_argument('-V','--assayversion',default='NONE',help='Assay version')
 parser.add_argument('--variantdb',required=False,type=checkfile,default=None,help='Sqlite database file for variant lookup and recording')
-parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
 args = parser.parse_args()
 

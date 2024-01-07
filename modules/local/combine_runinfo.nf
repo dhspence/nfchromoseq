@@ -15,17 +15,17 @@ process COMBINE_RUNINFO {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        csv2json.py: \$(csv2json.py -v)
+        \$(csv2json.py -v)
     END_VERSIONS
     """
 
     stub:
     """
-    csv2json.py -i ${id} -u runinfo*.csv
+    touch runinfo.json
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        csv2json.py: \$(csv2json.py -v)
+        \$(csv2json.py -v)
     END_VERSIONS
     """
 

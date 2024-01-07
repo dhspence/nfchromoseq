@@ -61,7 +61,7 @@ def main():
     parser.add_argument("sample_id", type=str, help="Sample ID")
     parser.add_argument("read1", type=checkfile, help="Path to demux directory")
     parser.add_argument("read2", type=checkfile, help="Path to demux directory")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
 

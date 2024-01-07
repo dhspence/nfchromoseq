@@ -31,7 +31,7 @@ def main():
     parser.add_argument("-Q","--minbasequal", type=int, default=13, help="Minimum base quality")
     parser.add_argument("-c","--coverage_values", default="10,20,40,60,100,250,500,1000,1250,2500,4000", 
                         help="Comma-separated coverage values (default: 10,20,40,60,100,250,500,1000,1250,2500,4000).")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
     

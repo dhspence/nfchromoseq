@@ -18,20 +18,20 @@ process MAKE_FASTQLIST {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_fastqs.py: \$(prepare_fastqs.py -v)
+        \$(prepare_fastqs.py -v)
     END_VERSIONS
     """
 
     stub:
     // if inputs is a directory, add -d to the arg, otherwise add -f
-    def input_args = inputs.isDirectory() ? "-d ${inputs}" : "-f ${inputs}"
+    def flag = inputs.isDirectory() ? "-d" : "-f"
 
     """
-    prepare_fastqs.py -i ${id} ${input_args}
+    prepare_fastqs.py -i ${id} ${input_args} ${inputs}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_fastqs.py: \$(prepare_fastqs.py -v)
+        \$(prepare_fastqs.py -v)
     END_VERSIONS
     """
 

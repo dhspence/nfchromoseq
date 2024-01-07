@@ -105,7 +105,7 @@ process DRAGEN_ALIGN_FASTQLIST {
 
     stub:
         """
-        cp $projectDir/assets/stub/dragen_path/${meta.id}* .
+        cp $projectDir/assets/stub/dragen_path/${meta.id}/${meta.id}* .
         echo -e "${task.process}:\n\tdragen: "\$(cat $projectDir/assets/stub/versions/dragen_version.txt) > versions.yml
         """
 

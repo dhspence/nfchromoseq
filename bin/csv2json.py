@@ -4,11 +4,14 @@ import argparse
 import pandas as pd
 import sys, json
 
+__version__ = '1.0.0'
+
 def main():
     # Set up argparse to handle the -i option and multiple CSV file arguments
     parser = argparse.ArgumentParser(description='Process CSV files')
     parser.add_argument('-i', '--id', required=True, help='ID parameter')
     parser.add_argument('-u', '--uniquify', action='store_true', default=False, help='only keep unique items')
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
     parser.add_argument('csv_files', nargs='+', help='CSV file paths')
     args = parser.parse_args()
 

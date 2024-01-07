@@ -22,7 +22,7 @@ process FILTER_VARIANTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        filter_variants.py: \$(filter_variants.py --version)
+        \$(filter_variants.py --version)
     END_VERSIONS
     """
 
@@ -33,7 +33,8 @@ process FILTER_VARIANTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        filter_variants.py: \$(filter_variants.py --version)
+        bcftools: \$(bcftools --version | head -n 1 | cut -d ' ' -f 2)
+        \$(filter_variants.py --version)
     END_VERSIONS
     """
 }

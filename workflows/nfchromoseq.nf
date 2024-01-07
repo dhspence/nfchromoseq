@@ -35,7 +35,6 @@ ch_multiqc_custom_methods_description = params.multiqc_methods_description ? fil
 //
 // SUBWORKFLOW: Consisting of a mix of local and nf-core/modules
 //
-include { INPUT_CHECK } from '../subworkflows/local/input_check'
 include { INPUT_CHECK            } from '../subworkflows/local/input_check.nf'
 include { CHROMOSEQ_ANALYSIS     } from '../subworkflows/local/chromoseq_analysis.nf'
 include { GATHER_FASTQS          } from '../subworkflows/local/gather_fastqs.nf'
@@ -122,7 +121,7 @@ workflow NFCHROMOSEQ {
     // holds dragen output paths
     ch_dragen_output = Channel.empty()
 
-    // holds processed dragen output paths and metadata for analysis
+    // holds processed dragen output paths and metadata for analysiss
     ch_analysis_inputs = Channel.empty()    
 
     // check the samplesheet. This just gets the meta values.
@@ -257,7 +256,7 @@ workflow NFCHROMOSEQ {
     ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+//    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 //    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (

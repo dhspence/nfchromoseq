@@ -141,7 +141,7 @@ def main():
     parser.add_argument('-2','--read2', type=checkfile, help="Path to read2")
     parser.add_argument('-f','--fastqlist', type=checkfile, help="Path to fastq_list.csv")
     parser.add_argument('-d','--demuxpath', type=checkfile, help="Path to Dragen demux directory")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
 

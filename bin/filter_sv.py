@@ -52,7 +52,7 @@ def main():
     parser.add_argument("-m", "--minSvReads", type=int, default=2, help="Minimum SR and PR alt-supporting reads")
     parser.add_argument("-a", "--minSvAbundance", type=float, default=5.0, help="Minimum SV abundance in percent")
     parser.add_argument("-o", "--outfile", type=fileexists, help="Outfile")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     nonSynon = {"splice_acceptor_variant","splice_donor_variant","stop_gained","frameshift_variant","stop_lost","start_lost","transcript_ablation","transcript_amplification","inframe_insertion","inframe_deletion","missense_variant","protein_altering_variant"}
 

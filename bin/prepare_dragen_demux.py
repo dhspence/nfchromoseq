@@ -77,7 +77,7 @@ def main():
     parser.add_argument('-r', '--rundir',type=checkfile, help='Path to the Illumina run folder')
     parser.add_argument('-s','--samplesheet',type=checkfile, help='Path to the samplesheet')
     parser.add_argument('-c','--checkindexes',action='store_true', default=False, help='Reverse complement indexes according to the RunInfo.')
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
 

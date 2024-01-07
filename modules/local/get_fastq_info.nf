@@ -15,7 +15,7 @@ process GET_FASTQ_INFO {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_fastqs.py: \$(prepare_fastqs.py -v)
+        \$(prepare_fastqs.py -v)
     END_VERSIONS
     """
 
@@ -25,7 +25,7 @@ process GET_FASTQ_INFO {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        prepare_fastqs.py: \$(prepare_fastqs.py -v)
+        \$(prepare_fastqs.py -v)
     END_VERSIONS
     """
 

@@ -23,7 +23,7 @@ process FILTER_SV {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        filter_sv.py: \$(filter_sv.py --version)
+        \$(filter_sv.py --version)
     END_VERSIONS
     """
 
@@ -34,7 +34,7 @@ process FILTER_SV {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        filter_sv.py: \$(filter_sv.py --version)
+        \$(filter_sv.py --version)
     END_VERSIONS
     """
 }
