@@ -67,20 +67,21 @@ workflow CHROMOSEQ_ANALYSIS {
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(GET_COVERAGE.out.versions)
+    ch_versions = ch_versions.mix(GET_COVERAGE.out.versions)
 
     RUN_ICHOR ( 
         ch_dragen_outputs,
         chromoseq_inputs,
         chromoseq_parameters
     )
+    ch_versions = ch_versions.mix(RUN_ICHOR.out.versions)
  
     FILTER_VARIANTS (
         ch_dragen_outputs,
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(FILTER_VARIANTS.out.versions)
+    ch_versions = ch_versions.mix(FILTER_VARIANTS.out.versions)
 
     ch_filtered_variants_vcf = FILTER_VARIANTS.out.vcf
     ANNOTATE_VARIANTS (
@@ -88,7 +89,7 @@ workflow CHROMOSEQ_ANALYSIS {
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(ANNOTATE_VARIANTS.out.versions)
+    ch_versions = ch_versions.mix(ANNOTATE_VARIANTS.out.versions)
 
     ch_cnv_vcf = RUN_ICHOR.out.seg.join(ch_dragen_outputs)
     FILTER_CNV (
@@ -96,14 +97,14 @@ workflow CHROMOSEQ_ANALYSIS {
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(FILTER_CNV.out.versions)
+    ch_versions = ch_versions.mix(FILTER_CNV.out.versions)
 
     ANNOTATE_SV (
         ch_dragen_outputs,
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(ANNOTATE_SV.out.versions)
+    ch_versions = ch_versions.mix(ANNOTATE_SV.out.versions)
 
     ch_annotated_sv_vcf = ANNOTATE_SV.out.vcf
     FILTER_SV (
@@ -111,7 +112,7 @@ workflow CHROMOSEQ_ANALYSIS {
         chromoseq_inputs,
         chromoseq_parameters
     )
-    ch_versions.mix(FILTER_SV.out.versions)
+    ch_versions = ch_versions.mix(FILTER_SV.out.versions)
 
     RUN_HAPLOTECT (
         ch_dragen_outputs,
@@ -128,8 +129,8 @@ workflow CHROMOSEQ_ANALYSIS {
         chromoseq_inputs, 
         chromoseq_parameters
     )
-    ch_versions.mix(MAKE_REPORT.out.versions)
-
+    ch_versions = ch_versions.mix(MAKE_REPORT.out.versions)
+    
     emit:
     report = MAKE_REPORT.out.json_report
     versions = ch_versions

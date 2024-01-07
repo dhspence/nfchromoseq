@@ -6,3 +6,6 @@ results/
 testing/
 testing*
 *.pyc
+assets/stub/*.csv
+assets/stub/demux_fastq/Reports/fastq_list.csv
+assets/stub/demux_fastq/fastq_list.csv

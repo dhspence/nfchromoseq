@@ -196,7 +196,7 @@ def main():
     parser.add_argument("-s", "--minsize", type=int, default=5000000, help="Minimum CNA size")
     parser.add_argument("-f", "--minabund", type=float, default=10.0, help="Minimum CNA cell fraction to pass filter")
     parser.add_argument("-m", "--discardabund", type=float, default=0.05, help="Discard abundance")
-    parser.add_argument('-v', '--version', action='version', version='%(prog)s ' + __version__)
+    parser.add_argument('-v', '--version', action='version', version='%(prog)s: ' + __version__)
 
     args = parser.parse_args()
 

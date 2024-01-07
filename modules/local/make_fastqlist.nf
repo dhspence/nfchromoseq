@@ -32,6 +32,7 @@ process MAKE_FASTQLIST {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         \$(prepare_fastqs.py -v)
+        container: ${task.container}
     END_VERSIONS
     """
 

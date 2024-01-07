@@ -14,7 +14,8 @@ process RUN_ICHOR {
     tuple val(meta), path ("*_genomeWide_all_sols.pdf")   , emit: allgenomewide_pdf
     tuple val(meta), path ("*_genomeWide.pdf")            , emit: genomewide_pdf
     tuple val(meta), path ("*_genomeWideCorrection.pdf")  , emit: genomewideCorrection_pdf
- 
+    path "versions.yml",    emit: versions
+
     script:
     """
     set -eo pipefail && \\
@@ -33,6 +34,11 @@ process RUN_ICHOR {
     --txnE 0.999999 --txnStrength 1000000 --genomeStyle UCSC --outDir ./ --libdir /usr/local/bin/ichorCNA/ && \\
     awk -v G=${meta.sex} '\$2!~/Y/ || G=="male"' "${meta.id}.seg.txt" > "${meta.id}.segs.txt" && \\
     mv ${meta.id}/*.pdf .
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ichorCNA: ${task.container}
+    END_VERSIONS
     """
 
     stub:
@@ -41,6 +47,11 @@ process RUN_ICHOR {
     touch "${meta.id}_genomeWide_all_sols.pdf"
     touch "${meta.id}_genomeWideCorrection.pdf"
     touch "${meta.id}_genomeWide.pdf"
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        ichorCNA: ${task.container}
+    END_VERSIONS
     """
 
 }

@@ -35,7 +35,11 @@ process DRAGEN_DEMUX {
     mkdir ${demuxdir}/Reports/ && \\
     cp ${projectDir}/assets/stub/demux_fastq/Reports/fastq_list.csv ${demuxdir}/Reports/fastq_list.csv && \
     cp ${demuxdir}/Reports/fastq_list.csv .
-    echo -e "${task.process}:\n\tdragen: "\$(cat ${projectDir}/assets/stub/versions/dragen_version.txt) > versions.yml
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        dragen: \$(cat ${projectDir}/assets/stub/versions/dragen_version.txt)
+    END_VERSIONS
     """
 
 }

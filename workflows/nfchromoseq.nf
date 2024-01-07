@@ -70,7 +70,8 @@ def stageFileset(Map filePathMap) {
     def filePathsList = []
 
     filePathMap.each { key, value ->
-        def filepath = file(value)
+
+        def filepath = file(value, checkExists: true)
         if (filepath.exists()) {
             // Add basename and key to the map
             basePathMap[key] = value.split('/')[-1]
@@ -211,7 +212,7 @@ workflow NFCHROMOSEQ {
     if (params.run_align == true) {
         DRAGEN_ALIGN(ch_align_input, ch_cramtorealign, ch_dragen_inputs, params.chromoseq_parameters)
         ch_dragen_output = DRAGEN_ALIGN.out.dragen_output
-        ch_versions.mix(DRAGEN_ALIGN.out.versions)
+        ch_versions = ch_versions.mix(DRAGEN_ALIGN.out.versions)
     }
 
     // add any dragen paths to analysis list, if realign was not specified
@@ -235,14 +236,14 @@ workflow NFCHROMOSEQ {
     // run analysis
     if (params.run_analysis == true) {
         CHROMOSEQ_ANALYSIS(ch_dragen_output, ch_chromoseq_inputs, params.chromoseq_parameters)
-        ch_versions.mix(CHROMOSEQ_ANALYSIS.out.versions)
+        ch_versions = ch_versions.mix(CHROMOSEQ_ANALYSIS.out.versions)
     }
 
 //    ch_qc_reports = CHROMOSEQ_ANALYSIS.out.mqc_report
 
-//    CUSTOM_DUMPSOFTWAREVERSIONS (
-//        ch_versions.unique().collectFile(name: 'collated_versions.yml')
-//    )
+    CUSTOM_DUMPSOFTWAREVERSIONS (
+        ch_versions.unique().collectFile(name: 'collated_versions.yml')
+    )
 
     //
     // MODULE: MultiQC
@@ -256,7 +257,7 @@ workflow NFCHROMOSEQ {
     ch_multiqc_files = Channel.empty()
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(ch_methods_description.collectFile(name: 'methods_description_mqc.yaml'))
-//    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
+    ch_multiqc_files = ch_multiqc_files.mix(CUSTOM_DUMPSOFTWAREVERSIONS.out.mqc_yml.collect())
 //    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (

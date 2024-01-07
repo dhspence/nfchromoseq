@@ -11,7 +11,7 @@
             "description": "Required input files for ChromoSeq dragen alignments.",
             "default": "",
             "properties": {
-                "dragen_inputs.dragen_staging_path": {
+                "dragen_staging_path": {
                     "type": "string",
                     "default": "/staging/intermediate-results-dir",
                     "description": "Staging path for dragen intermediate files"

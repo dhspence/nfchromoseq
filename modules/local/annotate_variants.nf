@@ -11,7 +11,7 @@ process ANNOTATE_VARIANTS {
 
     output:
     tuple val(meta), path("${meta.id}.annotated.vcf.gz*", arity: '2'), emit: vcf
-    path "versions.yml",    emit: versions  
+    path "versions.yml",    emit: versions
 
     script:
     """
@@ -23,8 +23,9 @@ process ANNOTATE_VARIANTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vep: \$(/opt/vep/src/ensembl-vep/vep --version)
+        vep: \$(/opt/vep/src/ensembl-vep/vep 2>&1 | grep ensembl-vep | cut -d ':' -f 2 | sed 's/\s*//g')
     END_VERSIONS
+    /opt/vep/src/ensembl-vep/vep --dir ${chromoseq_inputs.vepcache} --show_cache_info | awk '{ print "    "\$1": "\$2; }' >> versions.yml
     """
 
     stub:
@@ -34,7 +35,7 @@ process ANNOTATE_VARIANTS {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vep: \$(/opt/vep/src/ensembl-vep/vep --version)
+    \$(cat $projectDir/assets/stub/versions/vep_version.yaml)
     END_VERSIONS
     """
 }

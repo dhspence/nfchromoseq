@@ -35,6 +35,7 @@ process FILTER_CNV {
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
+        bcftools: \$(bcftools --version | head -n 1 | cut -d ' ' -f 2)
         \$(process_cnvs.py --version)
     END_VERSIONS
     """

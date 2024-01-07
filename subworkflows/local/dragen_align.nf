@@ -61,7 +61,11 @@ process DRAGEN_ALIGN_CRAM {
     stub:
         """
         cp ${projectDir}/assets/stub/${meta.id}/* .
-        echo -e "${task.process}:\n\tdragen: "\$(cat $projectDir/assets/stub/versions/dragen_version.txt) > versions.yml
+
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            dragen: \$(cat $projectDir/assets/stub/versions/dragen_version.txt)
+        END_VERSIONS
         """
 
 }
@@ -106,7 +110,10 @@ process DRAGEN_ALIGN_FASTQLIST {
     stub:
         """
         cp $projectDir/assets/stub/dragen_path/${meta.id}/${meta.id}* .
-        echo -e "${task.process}:\n\tdragen: "\$(cat $projectDir/assets/stub/versions/dragen_version.txt) > versions.yml
+        cat <<-END_VERSIONS > versions.yml
+        "${task.process}":
+            dragen: \$(cat $projectDir/assets/stub/versions/dragen_version.txt)
+        END_VERSIONS
         """
 
 }
