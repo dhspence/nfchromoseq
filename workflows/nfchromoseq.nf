@@ -232,7 +232,6 @@ workflow NFCHROMOSEQ {
         ch_dragen_output.view()
     }
 
-
     // run analysis
     if (params.run_analysis == true) {
         CHROMOSEQ_ANALYSIS(ch_dragen_output, ch_chromoseq_inputs, params.chromoseq_parameters)
